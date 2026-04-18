@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MediPulse – Emergency Patient Monitoring System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--navy:#0a1628;--navy2:#0f2044;--navy3:#162d5a;--teal:#00c5b7;--teal2:#00a89c;--light:#f4f7fb;--white:#fff;--muted:#6b7c99;--border:#dde6f0;--text:#1a2b45;--red:#e53e3e;--green:#38a169;--amber:#d97706;--shadow:0 4px 24px rgba(10,22,40,.10);--shadow-lg:0 8px 40px rgba(10,22,40,.16)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--light);color:var(--text);min-height:100vh}
+a{color:var(--teal);text-decoration:none}
+button{cursor:pointer;font-family:'DM Sans',sans-serif}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#f0f4f8}::-webkit-scrollbar-thumb{background:var(--teal);border-radius:3px}
+
+.topnav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,22,40,.96);backdrop-filter:blur(12px);padding:0 48px;height:64px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.06);display:none}
+.topnav.show{display:flex}
+.logo{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700;color:#fff}
+.logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--teal),#0099ff);border-radius:9px;display:flex;align-items:center;justify-content:center}
+.logo-icon svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.logo span{color:var(--teal)}
+.nav-right{display:flex;align-items:center;gap:12px}
+.nav-badge{background:rgba(0,197,183,.15);border:1px solid rgba(0,197,183,.3);color:var(--teal);font-size:11px;font-weight:700;padding:3px 11px;border-radius:20px;text-transform:uppercase;letter-spacing:.6px}
+.btn-logout{background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);padding:6px 16px;border-radius:8px;font-size:13px;font-weight:500;transition:.2s}
+.btn-logout:hover{background:rgba(255,255,255,.08);color:#fff}
+
+.pg{display:none}
+.pg.active{display:block}
+
+/* LOGIN */
+.login-wrap{min-height:100vh;display:grid;grid-template-columns:1fr 1fr}
+.login-left{background:var(--navy);position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:48px}
+.login-bg{position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=900&q=80')center/cover;opacity:.22}
+.login-left-c{position:relative;z-index:2}
+.login-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(0,197,183,.15);border:1px solid rgba(0,197,183,.3);color:var(--teal);font-size:11px;font-weight:700;padding:5px 13px;border-radius:20px;margin-bottom:22px;text-transform:uppercase;letter-spacing:.8px}
+.pulse-dot{width:7px;height:7px;background:var(--teal);border-radius:50%;animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+.login-h{font-family:'Playfair Display',serif;font-size:40px;color:#fff;line-height:1.15;margin-bottom:14px}
+.login-h span{color:var(--teal)}
+.login-sub{color:rgba(255,255,255,.5);font-size:14px;line-height:1.75;max-width:380px;margin-bottom:28px}
+.feat{display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.65);font-size:13px;margin-bottom:10px}
+.feat-dot{width:7px;height:7px;background:var(--teal);border-radius:50%;flex-shrink:0}
+
+.login-right{background:#fff;display:flex;align-items:center;justify-content:center;padding:48px 40px}
+.login-box{width:100%;max-width:400px}
+.login-box h2{font-size:26px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.login-box .sub{color:var(--muted);font-size:14px;margin-bottom:28px}
+
+.role-tabs{display:flex;gap:5px;background:var(--light);padding:4px;border-radius:11px;margin-bottom:22px}
+.role-tab{flex:1;padding:8px;border:none;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted);background:transparent;transition:.18s}
+.role-tab.active{background:#fff;color:var(--navy);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+
+.fg{margin-bottom:15px}
+.fg label{display:block;font-size:12.5px;font-weight:600;color:var(--navy);margin-bottom:5px;letter-spacing:.2px}
+.fg input,.fg select,.fg textarea{width:100%;padding:11px 15px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:#fff;transition:.18s;outline:none}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,197,183,.1)}
+.fg textarea{min-height:88px;resize:vertical;line-height:1.6}
+select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7c99' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+select option{background:#fff;color:var(--text)}
+
+.btn-primary{width:100%;padding:12px;background:linear-gradient(135deg,var(--teal),#0099ff);color:#fff;border:none;border-radius:10px;font-size:14.5px;font-weight:700;letter-spacing:.3px;transition:.2s;margin-top:4px}
+.btn-primary:hover{opacity:.92;transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,197,183,.35)}
+.btn-sm{padding:7px 16px;border:none;border-radius:7px;font-size:12.5px;font-weight:600;transition:.18s;display:inline-block}
+.btn-teal{background:var(--teal);color:#fff}.btn-teal:hover{background:var(--teal2)}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--muted)}.btn-outline:hover{border-color:var(--teal);color:var(--teal)}
+
+.hint{font-size:12px;color:var(--muted);margin-top:14px;text-align:center}
+.hint a{font-weight:600}
+.msg{font-size:13px;padding:9px 13px;border-radius:8px;margin-top:10px;font-weight:500}
+.msg.err{background:#fff0f0;color:var(--red);border:1px solid #fcc}
+.msg.ok{background:#f0fff4;color:var(--green);border:1px solid #b7ebc8}
+.creds{background:var(--light);border:1.5px dashed var(--border);border-radius:10px;padding:13px 15px;margin-top:18px}
+.creds p{font-size:12px;color:var(--muted);line-height:2}
+.creds strong{color:var(--navy);font-weight:700}
+
+/* REGISTER */
+.reg-wrap{min-height:100vh;display:grid;grid-template-columns:1fr 1fr}
+.reg-left{background:#fff;display:flex;align-items:center;justify-content:center;padding:48px 40px}
+.reg-right{background:var(--navy);position:relative;overflow:hidden}
+.reg-img{position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=900&q=80')center/cover;opacity:.25}
+.reg-content{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;justify-content:center;padding:48px}
+.stat-pill{background:rgba(255,255,255,.07);border-radius:12px;padding:16px}
+.stat-pill .num{font-size:22px;font-weight:800;color:var(--teal)}
+.stat-pill .lbl{font-size:11px;color:rgba(255,255,255,.45);margin-top:2px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* DASHBOARD */
+.dash-wrap{display:grid;grid-template-columns:240px 1fr;min-height:100vh;padding-top:64px}
+.sidebar{background:var(--navy);position:fixed;top:64px;left:0;bottom:0;width:240px;padding:20px 0;overflow-y:auto}
+.sb-user{display:flex;align-items:center;gap:10px;padding:14px;margin:8px 14px;background:rgba(255,255,255,.05);border-radius:10px}
+.ava{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--teal),#0099ff);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.ava img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.sb-info p{font-size:12.5px;font-weight:600;color:#fff;line-height:1.3}
+.sb-info span{font-size:11px;color:rgba(255,255,255,.35)}
+.sb-section{padding:0 14px;margin-bottom:6px}
+.sb-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,.28);letter-spacing:1.2px;text-transform:uppercase;padding:0 8px;margin-bottom:7px}
+.sb-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:8px;color:rgba(255,255,255,.5);font-size:13px;font-weight:500;cursor:pointer;transition:.14s;margin-bottom:2px;border-left:3px solid transparent}
+.sb-item:hover{background:rgba(255,255,255,.06);color:#fff}
+.sb-item.active{background:rgba(0,197,183,.14);color:var(--teal);border-left-color:var(--teal)}
+.sb-item svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
+.main{margin-left:240px;padding:28px 32px;min-height:calc(100vh - 64px)}
+.ph{margin-bottom:24px}.ph h1{font-size:22px;font-weight:700;color:var(--navy)}.ph p{color:var(--muted);font-size:13px;margin-top:3px}
+
+.card{background:#fff;border-radius:14px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.ch{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.ch h3{font-size:15px;font-weight:700;color:var(--navy)}
+.cb{padding:22px}
+
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.sc{background:#fff;border-radius:13px;padding:18px;box-shadow:var(--shadow);border:1px solid var(--border);display:flex;align-items:center;gap:14px}
+.sc-icon{width:46px;height:46px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sc-icon svg{width:21px;height:21px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sc-num{font-size:25px;font-weight:800;color:var(--navy);line-height:1}
+.sc-lbl{font-size:11.5px;color:var(--muted);margin-top:2px;font-weight:500}
+
+.hero-banner{border-radius:14px;overflow:hidden;position:relative;height:190px;margin-bottom:22px}
+.hero-banner img{width:100%;height:100%;object-fit:cover;opacity:.35}
+.hero-banner .hbc{position:absolute;inset:0;padding:26px 28px;display:flex;flex-direction:column;justify-content:flex-end;background:linear-gradient(0deg,rgba(10,22,40,.85) 0%,transparent 60%)}
+.hbc h2{font-family:'Playfair Display',serif;font-size:24px;color:#fff;margin-bottom:4px}
+.hbc p{color:rgba(255,255,255,.6);font-size:13px}
+
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
+.badge-green{background:#f0fff4;color:#276749}
+.badge-blue{background:#ebf8ff;color:#2b6cb0}
+.badge-red{background:#fff5f5;color:#c53030}
+.badge-amber{background:#fffbeb;color:#92400e}
+
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{padding:10px 14px;text-align:left;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);background:#fafbfd}
+td{padding:12px 14px;border-bottom:1px solid #f0f4f8;color:var(--text);vertical-align:middle}
+tr:hover td{background:#fafcff}tr:last-child td{border-bottom:none}
+
+.doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.doc-card{background:#fff;border-radius:13px;overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--border);transition:.2s}
+.doc-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.doc-card img{height:155px;width:100%;object-fit:cover;display:block}
+.doc-body{padding:14px}
+.doc-name{font-size:14px;font-weight:700;color:var(--navy)}
+.doc-spec{font-size:11.5px;color:var(--teal);font-weight:600;margin-bottom:6px}
+.doc-meta{font-size:11.5px;color:var(--muted);display:flex;gap:10px}
+
+.ar{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid #f0f4f8}
+.ar:last-child{border-bottom:none}
+.ar-ava{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--teal),#0099ff);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+
+.rx-card{background:#fff;border-radius:12px;border:1px solid var(--border);padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.rx-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.rx-doc{font-size:14px;font-weight:700;color:var(--navy)}
+.rx-date{font-size:11.5px;color:var(--muted)}
+.rx-med{font-size:12.5px;line-height:1.8;white-space:pre-line;padding:10px;background:var(--light);border-radius:8px;margin-bottom:8px}
+.rx-note{font-size:12px;color:var(--muted);font-style:italic}
+
+.sec{display:none}.sec.active{display:block}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.fu{animation:fadeUp .35s ease both}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="topnav" id="tnav">
+  <div class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2l2.5 7h7l-5.7 4.1 2.2 7L12 16l-6 4.1 2.2-7L2.5 9h7z"/></svg></div>
+    Medi<span>Pulse</span>
+  </div>
+  <div class="nav-right">
+    <span class="nav-badge" id="nbadge"></span>
+    <span style="font-size:13px;color:rgba(255,255,255,.55)" id="nuser"></span>
+    <button class="btn-logout" onclick="doLogout()">Sign Out</button>
+  </div>
+</nav>
+
+<!-- ══ LOGIN ══ -->
+<div id="pg-login" class="pg active">
+  <div class="login-wrap">
+    <div class="login-left">
+      <div class="login-bg"></div>
+      <div class="login-left-c">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:36px">
+          <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.5 7h7l-5.7 4.1 2.2 7L12 16l-6 4.1 2.2-7L2.5 9h7z"/></svg></div>
+          <span style="font-size:19px;font-weight:700;color:#fff">Medi<span style="color:var(--teal)">Pulse</span></span>
+        </div>
+        <div class="login-tag"><span class="pulse-dot"></span>Emergency Monitoring Active</div>
+        <h1 class="login-h">Smart Healthcare<br/>for <span>Critical Care</span></h1>
+        <p class="login-sub">A real-time patient monitoring system connecting doctors, patients, and administrators with intelligent workflows and instant access to medical records.</p>
+        <div class="feat"><span class="feat-dot"></span>Real-time appointment booking &amp; management</div>
+        <div class="feat"><span class="feat-dot"></span>Digital prescriptions with PDF export</div>
+        <div class="feat"><span class="feat-dot"></span>Multi-role access for doctors, patients &amp; admin</div>
+        <div class="feat"><span class="feat-dot"></span>Complete medical history tracking</div>
+      </div>
+    </div>
+    <div class="login-right">
+      <div class="login-box fu">
+        <h2>Welcome back</h2>
+        <p class="sub">Sign in to your MediPulse account</p>
+        <div class="role-tabs">
+          <button class="role-tab active" onclick="setRole('patient',this)">Patient</button>
+          <button class="role-tab" onclick="setRole('doctor',this)">Doctor</button>
+          <button class="role-tab" onclick="setRole('admin',this)">Admin</button>
+        </div>
+        <div class="fg"><label>Username</label><input id="lu" placeholder="Enter username"/></div>
+        <div class="fg"><label>Password</label><input id="lp" type="password" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+        <button class="btn-primary" onclick="doLogin()">Sign In to MediPulse</button>
+        <div id="lmsg"></div>
+        <p class="hint">New patient? <a href="#" onclick="showPg('pg-register')">Create account</a></p>
+        <div class="creds">
+          <p><strong>Demo Credentials</strong></p>
+          <p>🏥 Patient: <strong>patient1 / pass123</strong></p>
+          <p>👨‍⚕️ Doctor: <strong>doctor1 / doc123</strong></p>
+          <p>🔐 Admin: <strong>admin / admin</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ REGISTER ══ -->
+<div id="pg-register" class="pg">
+  <div class="reg-wrap">
+    <div class="reg-left">
+      <div style="width:100%;max-width:460px" class="fu">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:26px">
+          <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M12 2l2.5 7h7l-5.7 4.1 2.2 7L12 16l-6 4.1 2.2-7L2.5 9h7z"/></svg></div>
+          <span style="font-size:19px;font-weight:700;color:var(--navy)">Medi<span style="color:var(--teal)">Pulse</span></span>
+        </div>
+        <h2 style="font-size:25px;font-weight:700;color:var(--navy);margin-bottom:4px">Create Patient Account</h2>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:22px">Join MediPulse to manage your health</p>
+        <div class="fgrid">
+          <div class="fg"><label>Username</label><input id="ru" placeholder="Choose username"/></div>
+          <div class="fg"><label>Full Name</label><input id="rn" placeholder="Full name"/></div>
+          <div class="fg"><label>Age</label><input id="ra" type="number" placeholder="Age"/></div>
+          <div class="fg"><label>Gender</label><select id="rg"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+          <div class="fg"><label>Phone</label><input id="rph" placeholder="Phone number"/></div>
+          <div class="fg"><label>Password</label><input id="rp" type="password" placeholder="Password"/></div>
+        </div>
+        <button class="btn-primary" onclick="doReg()">Create Account</button>
+        <div id="rmsg"></div>
+        <p class="hint">Already have an account? <a href="#" onclick="showPg('pg-login')">Sign in</a></p>
+      </div>
+    </div>
+    <div class="reg-right">
+      <div class="reg-img"></div>
+      <div class="reg-content">
+        <h2 style="font-family:'Playfair Display',serif;font-size:33px;color:#fff;line-height:1.2;margin-bottom:14px">Your Health,<br/>Our Priority</h2>
+        <p style="color:rgba(255,255,255,.5);font-size:14px;line-height:1.8;margin-bottom:26px">Get access to top specialists, manage appointments, and receive digital prescriptions — all in one place.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="stat-pill"><div class="num">50+</div><div class="lbl">Specialists</div></div>
+          <div class="stat-pill"><div class="num">24/7</div><div class="lbl">Emergency Care</div></div>
+          <div class="stat-pill"><div class="num">1000+</div><div class="lbl">Patients Served</div></div>
+          <div class="stat-pill"><div class="num">4.9★</div><div class="lbl">Patient Rating</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PATIENT DASHBOARD ══ -->
+<div id="pg-dashboard" class="pg">
+  <div class="dash-wrap">
+    <div class="sidebar">
+      <div class="sb-user">
+        <div class="ava" id="p-ava"></div>
+        <div class="sb-info"><p id="p-sbname">Patient</p><span>Patient</span></div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-lbl">Menu</div>
+        <div class="sb-item active" onclick="sTab('p','overview',this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Overview</div>
+        <div class="sb-item" onclick="sTab('p','book',this)"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Book Appointment</div>
+        <div class="sb-item" onclick="sTab('p','appts',this)"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>My Appointments</div>
+        <div class="sb-item" onclick="sTab('p','rx',this)"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><path d="M12 12v4m-2-2h4"/></svg>Prescriptions</div>
+        <div class="sb-item" onclick="sTab('p','docs',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Our Doctors</div>
+      </div>
+    </div>
+    <div class="main">
+      <div id="p-overview" class="sec active">
+        <div class="hero-banner"><img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1200&q=80" alt=""/><div class="hbc"><h2 id="p-hname">Welcome!</h2><p>Your personal health dashboard</p></div></div>
+        <div class="stats-grid fu">
+          <div class="sc"><div class="sc-icon" style="background:#e8f4fd"><svg stroke="#0099ff" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><div><div class="sc-num" id="pst-a">0</div><div class="sc-lbl">Appointments</div></div></div>
+          <div class="sc"><div class="sc-icon" style="background:#f0fff4"><svg stroke="#38a169" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><path d="M12 12v4m-2-2h4"/></svg></div><div><div class="sc-num" id="pst-r">0</div><div class="sc-lbl">Prescriptions</div></div></div>
+          <div class="sc"><div class="sc-icon" style="background:#fef3c7"><svg stroke="#d97706" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div><div><div class="sc-num" id="pst-d">0</div><div class="sc-lbl">Doctors</div></div></div>
+          <div class="sc"><div class="sc-icon" style="background:#fff0f0"><svg stroke="#e53e3e" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div><div><div class="sc-num" style="color:var(--green);font-size:17px">Active</div><div class="sc-lbl">Health Status</div></div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+          <div class="card"><div class="ch"><h3>My Profile</h3></div><div class="cb" id="p-prof"></div></div>
+          <div class="card"><div class="ch"><h3>Recent Appointments</h3></div><div class="cb" id="p-recent"></div></div>
+        </div>
+      </div>
+
+      <div id="p-book" class="sec">
+        <div class="ph"><h1>Book an Appointment</h1><p>Choose a specialist and schedule your visit</p></div>
+        <div style="display:grid;grid-template-columns:3fr 2fr;gap:18px">
+          <div class="card"><div class="ch"><h3>Appointment Details</h3></div><div class="cb">
+            <div class="fg"><label>Select Doctor</label><select id="b-doc" onchange="autoH()"><option value="">Choose a doctor</option></select></div>
+            <div class="fg"><label>Hospital / Clinic</label><input id="b-hosp" placeholder="Auto-filled on selection"/></div>
+            <div class="fgrid">
+              <div class="fg"><label>Date</label><input id="b-date" type="date"/></div>
+              <div class="fg"><label>Time</label><input id="b-time" placeholder="e.g. 10:30 AM"/></div>
+            </div>
+            <div class="fg"><label>Disease / Condition</label><input id="b-dis" placeholder="What brings you in?"/></div>
+            <div class="fgrid">
+              <div class="fg"><label>Symptoms</label><input id="b-sym" placeholder="Describe symptoms"/></div>
+              <div class="fg"><label>Medical History</label><input id="b-hist" placeholder="Previous conditions"/></div>
+            </div>
+            <button class="btn-primary" onclick="bookA()">Confirm Appointment</button>
+            <div id="bmsg"></div>
+          </div></div>
+          <div>
+            <div class="card" style="margin-bottom:14px"><div class="ch"><h3>Selected Doctor</h3></div><div class="cb" id="doc-preview"><p style="color:var(--muted);font-size:13px">Select a doctor to preview</p></div></div>
+            <div class="card"><img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=600&q=80" style="width:100%;height:120px;object-fit:cover;border-radius:13px 13px 0 0"/><div class="cb" style="padding:14px"><p style="font-size:13px;font-weight:600">SR University Hospital</p><p style="font-size:12px;color:var(--muted);margin-top:3px">Warangal · Open 24/7 · Emergency Ready</p></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="p-appts" class="sec">
+        <div class="ph"><h1>My Appointments</h1><p>Track and manage your scheduled visits</p></div>
+        <div class="card"><div class="cb" id="p-appts-list"></div></div>
+      </div>
+
+      <div id="p-rx" class="sec">
+        <div class="ph"><h1>My Prescriptions</h1><p>View and download your prescriptions</p></div>
+        <div id="p-rx-list"></div>
+      </div>
+
+      <div id="p-docs" class="sec">
+        <div class="ph"><h1>Our Specialists</h1><p>Expert doctors ready to care for you</p></div>
+        <div class="doc-grid" id="p-docs-grid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DOCTOR DASHBOARD ══ -->
+<div id="pg-doctor" class="pg">
+  <div class="dash-wrap">
+    <div class="sidebar">
+      <div class="sb-user">
+        <div class="ava" id="d-ava" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)"></div>
+        <div class="sb-info"><p id="d-sbname">Doctor</p><span>Physician</span></div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-lbl">Menu</div>
+        <div class="sb-item active" onclick="sTab('d','overview',this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Overview</div>
+        <div class="sb-item" onclick="sTab('d','appts',this)"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>Patient Appointments</div>
+        <div class="sb-item" onclick="sTab('d','prescribe',this)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add Prescription</div>
+      </div>
+    </div>
+    <div class="main">
+      <div id="d-overview" class="sec active">
+        <div class="hero-banner"><img src="https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=1200&q=80" alt=""/><div class="hbc"><h2 id="d-hname">Doctor Dashboard</h2><p>Manage your patients and prescriptions</p></div></div>
+        <div class="stats-grid">
+          <div class="sc"><div class="sc-icon" style="background:#f3f0ff"><svg stroke="#6366f1" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div><div><div class="sc-num" id="dst-p">0</div><div class="sc-lbl">My Patients</div></div></div>
+          <div class="sc"><div class="sc-icon" style="background:#e8f4fd"><svg stroke="#0099ff" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><div><div class="sc-num" id="dst-a">0</div><div class="sc-lbl">Appointments</div></div></div>
+          <div class="sc"><div class="sc-icon" style="background:#f0fff4"><svg stroke="#38a169" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><path d="M12 12v4m-2-2h4"/></svg></div><div><div class="sc-num" id="dst-r">0</div><div class="sc-lbl">Prescriptions</div></div></div>
+          <div class="sc"><div class="sc-icon" style="background:#fef3c7"><svg stroke="#d97706" viewBox="0 0 24 24"><path d="M12 2l2.5 7h7l-5.7 4.1 2.2 7L12 16l-6 4.1 2.2-7L2.5 9h7z"/></svg></div><div><div class="sc-num" id="dst-e" style="font-size:14px">—</div><div class="sc-lbl">Experience</div></div></div>
+        </div>
+        <div class="card"><div class="ch"><h3>Doctor Profile</h3></div><div class="cb" id="d-prof"></div></div>
+      </div>
+      <div id="d-appts" class="sec">
+        <div class="ph"><h1>Patient Appointments</h1><p>All scheduled visits assigned to you</p></div>
+        <div class="card"><div class="cb" id="d-appts-list"></div></div>
+      </div>
+      <div id="d-prescribe" class="sec">
+        <div class="ph"><h1>Add Prescription</h1><p>Issue a prescription for a patient</p></div>
+        <div style="display:grid;grid-template-columns:3fr 2fr;gap:18px">
+          <div class="card"><div class="ch"><h3>Prescription Details</h3></div><div class="cb">
+            <div class="fg"><label>Select Patient</label><select id="rx-p"><option value="">Choose patient</option></select></div>
+            <div class="fg"><label>Medicines</label><textarea id="rx-m" placeholder="e.g. Paracetamol 500mg – twice daily&#10;Cetirizine 10mg – at night"></textarea></div>
+            <div class="fg"><label>Doctor's Notes</label><textarea id="rx-n" placeholder="Instructions for the patient..."></textarea></div>
+            <button class="btn-primary" onclick="addRx()">Issue Prescription</button>
+            <div id="rxmsg"></div>
+          </div></div>
+          <div class="card"><img src="https://images.unsplash.com/photo-1585435557343-3b092031a831?w=600&q=80" style="width:100%;height:150px;object-fit:cover;border-radius:13px 13px 0 0"/><div class="cb"><h3 style="font-size:14px;font-weight:700;margin-bottom:7px">Digital Prescriptions</h3><p style="font-size:12.5px;color:var(--muted);line-height:1.7">Prescriptions are instantly available to patients and downloadable as text files for pharmacy use.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADMIN ══ -->
+<div id="pg-admin" class="pg">
+  <div class="dash-wrap">
+    <div class="sidebar">
+      <div class="sb-user">
+        <div class="ava" style="background:linear-gradient(135deg,#e53e3e,#c05621)">A</div>
+        <div class="sb-info"><p>Administrator</p><span>System Admin</span></div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-lbl">Administration</div>
+        <div class="sb-item active" onclick="sTab('a','overview',this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</div>
+        <div class="sb-item" onclick="sTab('a','patients',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Patients</div>
+        <div class="sb-item" onclick="sTab('a','doctors',this)"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Doctors</div>
+        <div class="sb-item" onclick="sTab('a','appointments',this)"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Appointments</div>
+        <div class="sb-item" onclick="sTab('a','prescriptions',this)"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><path d="M12 12v4m-2-2h4"/></svg>Prescriptions</div>
+        <div class="sb-item" onclick="sTab('a','adddoc',this)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add Doctor</div>
+      </div>
+    </div>
+    <div class="main">
+      <div id="a-overview" class="sec active">
+        <div class="hero-banner"><img src="https://images.unsplash.com/photo-1516549655169-df83a0774514?w=1200&q=80" alt=""/><div class="hbc"><h2>Admin Control Panel</h2><p>MediPulse – System Overview</p></div></div>
+        <div class="stats-grid fu">
+          <div class="sc"><div class="sc-icon" style="background:#e8f4fd"><svg stroke="#0099ff" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div><div><div class="sc-num" id="ast-p">0</div><div class="sc-lbl">Patients</div></div></div>
+          <div class="sc"><div class="sc-icon" style="background:#f3f0ff"><svg stroke="#6366f1" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div><div><div class="sc-num" id="ast-d">0</div><div class="sc-lbl">Doctors</div></div></div>
+          <div class="sc"><div class="sc-icon" style="background:#f0fff4"><svg stroke="#38a169" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><div><div class="sc-num" id="ast-a">0</div><div class="sc-lbl">Appointments</div></div></div>
+          <div class="sc"><div class="sc-icon" style="background:#fff5f5"><svg stroke="#e53e3e" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><path d="M12 12v4m-2-2h4"/></svg></div><div><div class="sc-num" id="ast-r">0</div><div class="sc-lbl">Prescriptions</div></div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:3fr 2fr;gap:18px">
+          <div class="card"><div class="ch"><h3>Recent Appointments</h3></div><div class="cb" id="a-recent"></div></div>
+          <div class="card"><img src="https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=800&q=80" style="width:100%;height:180px;object-fit:cover"/><div class="cb" style="padding:14px"><p style="font-size:13px;font-weight:700">SR University Hospital</p><p style="font-size:12px;color:var(--muted);margin-top:3px">Warangal, Telangana · NAAC A+</p></div></div>
+        </div>
+      </div>
+      <div id="a-patients" class="sec"><div class="ph"><h1>All Patients</h1></div><div class="card"><div class="table-wrap"><table><thead><tr><th>Name</th><th>Username</th><th>Age</th><th>Gender</th><th>Phone</th></tr></thead><tbody id="ta-p"></tbody></table></div></div></div>
+      <div id="a-doctors" class="sec"><div class="ph"><h1>All Doctors</h1></div><div class="card"><div class="table-wrap"><table><thead><tr><th>Doctor</th><th>Specialization</th><th>Hospital</th><th>Experience</th><th>Fee</th><th>Status</th></tr></thead><tbody id="ta-d"></tbody></table></div></div></div>
+      <div id="a-appointments" class="sec"><div class="ph"><h1>All Appointments</h1></div><div class="card"><div class="table-wrap"><table><thead><tr><th>Patient</th><th>Doctor</th><th>Disease</th><th>Date</th><th>Time</th><th>Status</th></tr></thead><tbody id="ta-a"></tbody></table></div></div></div>
+      <div id="a-prescriptions" class="sec"><div class="ph"><h1>All Prescriptions</h1></div><div class="card"><div class="table-wrap"><table><thead><tr><th>Patient</th><th>Doctor</th><th>Medicines</th><th>Date</th></tr></thead><tbody id="ta-r"></tbody></table></div></div></div>
+      <div id="a-adddoc" class="sec">
+        <div class="ph"><h1>Add New Doctor</h1></div>
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:18px">
+          <div class="card"><div class="ch"><h3>Doctor Information</h3></div><div class="cb">
+            <div class="fgrid">
+              <div class="fg"><label>Full Name</label><input id="nd-nm" placeholder="Dr. Full Name"/></div>
+              <div class="fg"><label>Username</label><input id="nd-u" placeholder="Login username"/></div>
+              <div class="fg"><label>Password</label><input id="nd-pw" type="password" placeholder="Password"/></div>
+              <div class="fg"><label>Specialization</label><input id="nd-sp" placeholder="e.g. Cardiologist"/></div>
+              <div class="fg"><label>Hospital</label><input id="nd-ho" placeholder="Hospital name"/></div>
+              <div class="fg"><label>Phone</label><input id="nd-ph" placeholder="Phone number"/></div>
+              <div class="fg"><label>Experience</label><input id="nd-ex" placeholder="e.g. 8 years"/></div>
+              <div class="fg"><label>Fee (₹)</label><input id="nd-fe" type="number" placeholder="500"/></div>
+            </div>
+            <button class="btn-primary" onclick="addDoc()">Add Doctor</button>
+            <div id="ndmsg"></div>
+          </div></div>
+          <div class="card"><img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=600&q=80" style="width:100%;height:220px;object-fit:cover;border-radius:13px 13px 0 0"/><div class="cb"><p style="font-size:12.5px;color:var(--muted);line-height:1.7">New doctors added here are immediately available for patient appointments.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DB={
+  patients:[
+    {_id:"p1",username:"patient1",name:"Kiranmai Sharma",age:21,gender:"Female",phone:"9876543210",password:"pass123"},
+    {_id:"p2",username:"patient2",name:"Shalini Reddy",age:22,gender:"Female",phone:"9123456780",password:"pass456"}
+  ],
+  doctors:[
+    {_id:"d1",username:"doctor1",name:"Dr. Ravi Kumar",specialization:"Cardiologist",hospital:"Apollo Hospital",experience:"12 years",fee:700,available:true,phone:"9950112345",password:"doc123",img:"https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&q=80"},
+    {_id:"d2",username:"doctor2",name:"Dr. Meena Reddy",specialization:"Dermatologist",hospital:"Care Hospital",experience:"9 years",fee:500,available:true,phone:"9848023456",password:"doc456",img:"https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&q=80"},
+    {_id:"d3",username:"doctor3",name:"Dr. John Varma",specialization:"Neurologist",hospital:"AIIMS Outreach",experience:"14 years",fee:900,available:true,phone:"9848534567",password:"doc789",img:"https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&q=80"}
+  ],
+  appointments:[
+    {_id:"a1",patient_id:"p1",patientName:"Kiranmai Sharma",doctor_id:"d1",doctorName:"Dr. Ravi Kumar",disease:"Hypertension",symptoms:"Headache, dizziness",medical_history:"None",hospital:"Apollo Hospital",appointment_date:"2026-04-20",appointment_time:"10:30 AM",status:"Confirmed"},
+    {_id:"a2",patient_id:"p2",patientName:"Shalini Reddy",doctor_id:"d2",doctorName:"Dr. Meena Reddy",disease:"Skin Allergy",symptoms:"Rashes, itching",medical_history:"None",hospital:"Care Hospital",appointment_date:"2026-04-22",appointment_time:"02:00 PM",status:"Confirmed"}
+  ],
+  prescriptions:[
+    {_id:"rx1",patientName:"Kiranmai Sharma",doctorName:"Dr. Ravi Kumar",medicines:"Amlodipine 5mg – once daily\nMetoprolol 25mg – twice daily",notes:"Avoid salt. Monitor BP daily.",date:"4/17/2026"},
+    {_id:"rx2",patientName:"Shalini Reddy",doctorName:"Dr. Meena Reddy",medicines:"Cetirizine 10mg – at night\nCalamine lotion – apply twice daily",notes:"Avoid synthetic fabric. Stay cool.",date:"4/18/2026"}
+  ]
+};
+let CU=null,CR=null,LR='patient';
+
+function showPg(id){document.querySelectorAll('.pg').forEach(e=>e.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function setRole(r,el){LR=r;document.querySelectorAll('.role-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active')}
+function ini(n){return n.replace('Dr. ','').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}
+function showMsg(id,t,tp){const e=document.getElementById(id);e.innerHTML=`<div class="msg ${tp==='ok'?'ok':'err'}">${t}</div>`}
+
+function sTab(px,nm,el){
+  const pg={p:'pg-dashboard',d:'pg-doctor',a:'pg-admin'}[px];
+  document.getElementById(pg).querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.getElementById(pg).querySelectorAll('.sb-item').forEach(s=>s.classList.remove('active'));
+  const s=document.getElementById(px+'-'+nm);
+  if(s)s.classList.add('active');
+  if(el)el.classList.add('active');
+}
+
+function doLogin(){
+  const u=document.getElementById('lu').value.trim();
+  const p=document.getElementById('lp').value.trim();
+  if(!u||!p){showMsg('lmsg','Please enter username and password','err');return}
+  if(LR==='admin'){
+    if(u==='admin'&&p==='admin'){CU={username:'admin',name:'Administrator'};CR='admin';loadAdmin();showNav('Administrator','Admin');showPg('pg-admin')}
+    else showMsg('lmsg','Invalid admin credentials','err');return;
+  }
+  if(LR==='patient'){
+    const pt=DB.patients.find(x=>x.username===u&&x.password===p);
+    if(!pt){showMsg('lmsg','Invalid credentials','err');return}
+    CU=pt;CR='patient';loadPatient();showNav(pt.name,'Patient');showPg('pg-dashboard');return;
+  }
+  if(LR==='doctor'){
+    const doc=DB.doctors.find(x=>x.username===u&&x.password===p);
+    if(!doc){showMsg('lmsg','Invalid credentials','err');return}
+    CU=doc;CR='doctor';loadDoctor();showNav('Dr. '+doc.name,'Doctor');showPg('pg-doctor');
+  }
+}
+function showNav(n,r){const nav=document.getElementById('tnav');nav.classList.add('show');document.getElementById('nuser').textContent=n;document.getElementById('nbadge').textContent=r}
+function doLogout(){CU=null;CR=null;document.getElementById('tnav').classList.remove('show');document.getElementById('lu').value='';document.getElementById('lp').value='';document.getElementById('lmsg').innerHTML='';showPg('pg-login')}
+function doReg(){
+  const u=document.getElementById('ru').value.trim(),n=document.getElementById('rn').value.trim(),a=document.getElementById('ra').value,g=document.getElementById('rg').value,ph=document.getElementById('rph').value.trim(),p=document.getElementById('rp').value.trim();
+  if(!u||!n||!a||!g||!ph||!p){showMsg('rmsg','All fields required','err');return}
+  if(DB.patients.find(x=>x.username===u)){showMsg('rmsg','Username already exists','err');return}
+  DB.patients.push({_id:'p'+(DB.patients.length+1),username:u,name:n,age:+a,gender:g,phone:ph,password:p});
+  showMsg('rmsg','Account created! Redirecting to login…','ok');
+  setTimeout(()=>showPg('pg-login'),1400);
+}
+
+// PATIENT
+function loadPatient(){
+  const u=CU;
+  document.getElementById('p-sbname').textContent=u.name;
+  document.getElementById('p-ava').textContent=ini(u.name);
+  document.getElementById('p-hname').textContent='Welcome, '+u.name.split(' ')[0]+'!';
+  const ma=DB.appointments.filter(a=>a.patient_id===u._id);
+  const mr=DB.prescriptions.filter(r=>r.patientName===u.name);
+  document.getElementById('pst-a').textContent=ma.length;
+  document.getElementById('pst-r').textContent=mr.length;
+  document.getElementById('pst-d').textContent=DB.doctors.filter(d=>d.available).length;
+  document.getElementById('p-prof').innerHTML=`<div style="display:flex;align-items:center;gap:14px;margin-bottom:14px"><div style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--teal),#0099ff);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:#fff">${ini(u.name)}</div><div><p style="font-weight:700;font-size:15px">${u.name}</p><p style="font-size:12px;color:var(--muted)">@${u.username}</p></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12.5px"><div><span style="color:var(--muted)">Age</span><p style="font-weight:600;margin-top:2px">${u.age} years</p></div><div><span style="color:var(--muted)">Gender</span><p style="font-weight:600;margin-top:2px">${u.gender}</p></div><div><span style="color:var(--muted)">Phone</span><p style="font-weight:600;margin-top:2px">${u.phone}</p></div></div>`;
+  document.getElementById('p-recent').innerHTML=ma.length?ma.slice(0,3).map(a=>`<div class="ar"><div class="ar-ava">${ini(a.doctorName)}</div><div><p style="font-size:13px;font-weight:600">${a.doctorName}</p><p style="font-size:11.5px;color:var(--muted)">${a.disease} · ${a.appointment_date}</p></div><span class="badge badge-green">${a.status}</span></div>`).join(''):'<p style="font-size:13px;color:var(--muted)">No appointments yet</p>';
+  const sel=document.getElementById('b-doc');
+  sel.innerHTML='<option value="">Choose a doctor</option>';
+  DB.doctors.forEach(d=>{const o=document.createElement('option');o.value=d._id;o.textContent=d.name+' – '+d.specialization;sel.appendChild(o)});
+  document.getElementById('p-appts-list').innerHTML=ma.length?ma.map(a=>`<div class="ar"><div class="ar-ava">${ini(a.doctorName)}</div><div><p style="font-size:13.5px;font-weight:700">${a.doctorName}</p><p style="font-size:12px;color:var(--muted)">${a.disease} · ${a.hospital}</p><p style="font-size:12px;color:var(--muted)">${a.appointment_date} · ${a.appointment_time}</p></div><span class="badge badge-green">${a.status}</span></div>`).join(''):'<p style="color:var(--muted);font-size:13px">No appointments yet</p>';
+  document.getElementById('p-rx-list').innerHTML=mr.length?mr.map(rx=>`<div class="rx-card"><div class="rx-header"><div><div class="rx-doc">${rx.doctorName}</div><div class="rx-date">Issued ${rx.date}</div></div><button class="btn-sm btn-teal" onclick="dlRx('${rx._id}')">⬇ Download</button></div><div class="rx-med">${rx.medicines}</div>${rx.notes?`<div class="rx-note">📝 ${rx.notes}</div>`:''}</div>`).join(''):'<div class="card"><div class="cb"><p style="color:var(--muted)">No prescriptions yet</p></div></div>';
+  document.getElementById('p-docs-grid').innerHTML=DB.doctors.map(d=>`<div class="doc-card"><img src="${d.img}" onerror="this.src='https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&q=80'"/><div class="doc-body"><div class="doc-name">${d.name}</div><div class="doc-spec">${d.specialization}</div><div class="doc-meta"><span>🏥 ${d.hospital}</span></div><div class="doc-meta" style="margin-top:3px"><span>⏱ ${d.experience}</span><span>₹${d.fee}</span></div><div style="margin-top:9px"><span class="badge ${d.available?'badge-green':'badge-red'}">${d.available?'Available':'Busy'}</span></div></div></div>`).join('');
+}
+function autoH(){
+  const id=document.getElementById('b-doc').value,doc=DB.doctors.find(d=>d._id===id);
+  document.getElementById('b-hosp').value=doc?doc.hospital:'';
+  const pv=document.getElementById('doc-preview');
+  pv.innerHTML=doc?`<div style="display:flex;align-items:center;gap:11px;margin-bottom:11px"><img src="${doc.img}" style="width:46px;height:46px;border-radius:50%;object-fit:cover" onerror="this.src='https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=100&q=80'"/><div><p style="font-weight:700;font-size:13.5px">${doc.name}</p><p style="font-size:11.5px;color:var(--teal);font-weight:600">${doc.specialization}</p></div></div><p style="font-size:12px;color:var(--muted)">🏥 ${doc.hospital}</p><p style="font-size:12px;color:var(--muted)">⏱ ${doc.experience}</p><p style="font-size:12px;color:var(--muted)">💳 Fee: <strong style="color:var(--navy)">₹${doc.fee}</strong></p>`:'<p style="color:var(--muted);font-size:13px">Select a doctor to preview</p>';
+}
+function bookA(){
+  const did=document.getElementById('b-doc').value,ho=document.getElementById('b-hosp').value.trim(),dis=document.getElementById('b-dis').value.trim(),dt=document.getElementById('b-date').value,tm=document.getElementById('b-time').value.trim();
+  if(!did||!dis||!ho||!dt||!tm){showMsg('bmsg','Please fill all required fields','err');return}
+  const doc=DB.doctors.find(d=>d._id===did);
+  DB.appointments.push({_id:'a'+(DB.appointments.length+1),patient_id:CU._id,patientName:CU.name,doctor_id:did,doctorName:doc.name,disease:dis,symptoms:document.getElementById('b-sym').value,medical_history:document.getElementById('b-hist').value,hospital:ho,appointment_date:dt,appointment_time:tm,status:'Confirmed'});
+  showMsg('bmsg','Appointment booked successfully!','ok');
+  ['b-doc','b-hosp','b-dis','b-date','b-time','b-sym','b-hist'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('doc-preview').innerHTML='<p style="color:var(--muted);font-size:13px">Select a doctor to preview</p>';
+  loadPatient();
+}
+function dlRx(id){
+  const rx=DB.prescriptions.find(x=>x._id===id);if(!rx)return;
+  const t=`====================================\n      MEDIPULSE PRESCRIPTION\n====================================\nPatient : ${rx.patientName}\nDoctor  : ${rx.doctorName}\nDate    : ${rx.date}\n------------------------------------\nMEDICINES:\n${rx.medicines}\n------------------------------------\nNOTES:\n${rx.notes||'None'}\n------------------------------------\nSigned: ${rx.doctorName}\n====================================\n  MediPulse – SR University\n====================================`;
+  const a=document.createElement('a');a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(t);a.download='Rx_'+rx._id+'.txt';a.click();
+}
+
+// DOCTOR
+function loadDoctor(){
+  const u=CU;
+  document.getElementById('d-sbname').textContent=u.name;
+  document.getElementById('d-ava').textContent=ini(u.name);
+  document.getElementById('d-hname').textContent='Welcome, '+u.name;
+  const ma=DB.appointments.filter(a=>a.doctorName===u.name);
+  const mr=DB.prescriptions.filter(r=>r.doctorName===u.name);
+  document.getElementById('dst-p').textContent=[...new Set(ma.map(a=>a.patientName))].length;
+  document.getElementById('dst-a').textContent=ma.length;
+  document.getElementById('dst-r').textContent=mr.length;
+  document.getElementById('dst-e').textContent=u.experience;
+  document.getElementById('d-prof').innerHTML=`<div style="display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start"><img src="${u.img}" style="width:78px;height:78px;border-radius:50%;object-fit:cover;border:3px solid var(--teal)" onerror="this.src='https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=100&q=80'"/><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12.5px"><div><span style="color:var(--muted)">Name</span><p style="font-weight:700;margin-top:2px">${u.name}</p></div><div><span style="color:var(--muted)">Specialization</span><p style="font-weight:600;margin-top:2px;color:var(--teal)">${u.specialization}</p></div><div><span style="color:var(--muted)">Hospital</span><p style="font-weight:600;margin-top:2px">${u.hospital}</p></div><div><span style="color:var(--muted)">Experience</span><p style="font-weight:600;margin-top:2px">${u.experience}</p></div><div><span style="color:var(--muted)">Phone</span><p style="font-weight:600;margin-top:2px">${u.phone}</p></div><div><span style="color:var(--muted)">Fee</span><p style="font-weight:600;margin-top:2px">₹${u.fee}</p></div></div></div>`;
+  document.getElementById('d-appts-list').innerHTML=ma.length?ma.map(a=>`<div class="ar"><div class="ar-ava" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">${ini(a.patientName)}</div><div><p style="font-size:13.5px;font-weight:700">${a.patientName}</p><p style="font-size:12px;color:var(--muted)">${a.disease} · ${a.appointment_date} · ${a.appointment_time}</p>${a.symptoms?`<p style="font-size:12px;color:var(--muted)">Symptoms: ${a.symptoms}</p>`:''}</div><span class="badge badge-blue">${a.status}</span></div>`).join(''):'<p style="color:var(--muted);font-size:13px">No appointments yet</p>';
+  const ps=document.getElementById('rx-p');ps.innerHTML='<option value="">Choose patient</option>';
+  DB.patients.forEach(p=>{const o=document.createElement('option');o.value=p.name;o.textContent=p.name;ps.appendChild(o)});
+}
+function addRx(){
+  const pn=document.getElementById('rx-p').value,m=document.getElementById('rx-m').value.trim(),n=document.getElementById('rx-n').value.trim();
+  if(!pn||!m){showMsg('rxmsg','Patient and medicines required','err');return}
+  DB.prescriptions.push({_id:'rx'+(DB.prescriptions.length+1),patientName:pn,doctorName:CU.name,medicines:m,notes:n,date:new Date().toLocaleDateString()});
+  showMsg('rxmsg','Prescription issued!','ok');
+  document.getElementById('rx-p').value='';document.getElementById('rx-m').value='';document.getElementById('rx-n').value='';
+  loadDoctor();
+}
+
+// ADMIN
+function loadAdmin(){
+  document.getElementById('ast-p').textContent=DB.patients.length;
+  document.getElementById('ast-d').textContent=DB.doctors.length;
+  document.getElementById('ast-a').textContent=DB.appointments.length;
+  document.getElementById('ast-r').textContent=DB.prescriptions.length;
+  document.getElementById('a-recent').innerHTML=DB.appointments.slice(0,4).map(a=>`<div class="ar"><div class="ar-ava">${ini(a.patientName)}</div><div><p style="font-size:13px;font-weight:600">${a.patientName} → ${a.doctorName}</p><p style="font-size:11.5px;color:var(--muted)">${a.disease} · ${a.appointment_date}</p></div><span class="badge badge-green">${a.status}</span></div>`).join('');
+  document.getElementById('ta-p').innerHTML=DB.patients.map(p=>`<tr><td style="font-weight:600">${p.name}</td><td><code style="background:var(--light);padding:2px 7px;border-radius:4px;font-size:11.5px">${p.username}</code></td><td>${p.age}</td><td>${p.gender}</td><td>${p.phone}</td></tr>`).join('');
+  document.getElementById('ta-d').innerHTML=DB.doctors.map(d=>`<tr><td style="font-weight:600">${d.name}</td><td style="color:var(--teal);font-weight:600">${d.specialization}</td><td>${d.hospital}</td><td>${d.experience}</td><td>₹${d.fee}</td><td><span class="badge ${d.available?'badge-green':'badge-red'}">${d.available?'Available':'Unavailable'}</span></td></tr>`).join('');
+  document.getElementById('ta-a').innerHTML=DB.appointments.map(a=>`<tr><td style="font-weight:600">${a.patientName}</td><td>${a.doctorName}</td><td>${a.disease}</td><td>${a.appointment_date}</td><td>${a.appointment_time}</td><td><span class="badge badge-green">${a.status}</span></td></tr>`).join('');
+  document.getElementById('ta-r').innerHTML=DB.prescriptions.map(p=>`<tr><td style="font-weight:600">${p.patientName}</td><td>${p.doctorName}</td><td style="font-size:12px;max-width:200px">${p.medicines.split('\n')[0]}${p.medicines.includes('\n')?'…':''}</td><td>${p.date}</td></tr>`).join('');
+}
+function addDoc(){
+  const nm=document.getElementById('nd-nm').value.trim(),u=document.getElementById('nd-u').value.trim(),pw=document.getElementById('nd-pw').value.trim(),sp=document.getElementById('nd-sp').value.trim(),ho=document.getElementById('nd-ho').value.trim(),ph=document.getElementById('nd-ph').value.trim(),ex=document.getElementById('nd-ex').value.trim(),fe=document.getElementById('nd-fe').value;
+  if(!nm||!u||!pw||!sp||!ho||!ph){showMsg('ndmsg','All required fields must be filled','err');return}
+  if(DB.doctors.find(d=>d.username===u)){showMsg('ndmsg','Username already exists','err');return}
+  DB.doctors.push({_id:'d'+(DB.doctors.length+1),name:nm,username:u,password:pw,specialization:sp,hospital:ho,phone:ph,experience:ex||'5 years',fee:fe?+fe:500,available:true,img:'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&q=80'});
+  showMsg('ndmsg','Doctor added successfully!','ok');
+  ['nd-nm','nd-u','nd-pw','nd-sp','nd-ho','nd-ph','nd-ex','nd-fe'].forEach(id=>document.getElementById(id).value='');
+  loadAdmin();
+}
+</script>
+</body>
+</html>
